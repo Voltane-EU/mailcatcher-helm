@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "mailcatcher.fullname" . }}
+  name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ include "mailcatcher.name" . }}
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ include "mailcatcher.name" . }}
+        app: {{ .Release.Name }}
     spec:
       containers:
         - name: mailcatcher
