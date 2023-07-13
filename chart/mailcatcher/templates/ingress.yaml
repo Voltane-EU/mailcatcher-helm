@@ -1,38 +1,33 @@
-{{- if .Values.ingress.enabled -}}
-{{- $servicePortHttp  := .Values.service.ports.http -}}
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: mailcatcher
-  labels:
-    app: {{ template "name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+  name: {{ include "mailcatcher.fullname" . }}-ingress
+  namespace: {{ .Release.Namespace }}
   annotations:
-    {{- range $key, $value := .Values.ingress.annotations }}
-    {{ $key }}: {{ $value | quote }}
-    {{- end }}
-    {{- if .Values.ingress.auth.enabled }}
-    nginx.ingress.kubernetes.io/auth-type: "basic"
-    nginx.ingress.kubernetes.io/auth-secret: "basic-auth-mailcatcher"
-    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
-    {{- end }}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: {{ include "mailcatcher.fullname" . }}-auth
 spec:
   rules:
-    {{- range $host := .Values.ingress.hosts }}
-    - host: {{ $host }}
+    - host: {{ .Values.ingress.hostname }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
-              name: mailcatcher
-              port:
-                number: {{ $servicePortHttp }}
-    {{- end -}}
-  {{- if .Values.ingress.tls }}
-  tls:
-{{ toYaml .Values.ingress.tls | indent 4 }}
-  {{- end -}}
-{{- end -}}
+              service:
+                name: {{ include "mailcatcher.fullname" . }}
+                port:
+                  number: {{ .Values.service.httpPort }}
+    - host: {{ .Values.ingress.hostname }}
+      http:
+        paths:
+          - path: /smtp
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "mailcatcher.fullname" . }}
+                port:
+                  number: {{ .Values.service.smtpPort }}
+{{- end }}
