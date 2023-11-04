@@ -1,6 +1,6 @@
 image:
-  repository: quay.io/evl.ms/mailcatcher
-  tag: 0.7.0
+  repository: sj26/mailcatcher
+  tag: 0.9.0
 
 service:
   httpPort: 80
